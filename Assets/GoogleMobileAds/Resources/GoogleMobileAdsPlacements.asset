@@ -3,14 +3,15 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 1766465624, guid: a1b1ab44b4414d64bd404c895fbd1eab, type: 3}
   m_Name: GoogleMobileAdsPlacements
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   allPlacements:
   - placementName: AdMob Demo Banner Ad
     adType: 0

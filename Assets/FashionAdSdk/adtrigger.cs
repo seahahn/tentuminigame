@@ -3,27 +3,59 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
+using GoogleMobileAds.Api;
 
 public class adtrigger : MonoBehaviour
 {
-    public RawImage adPanel;
-    public Button goToBuyButton;
+    // public RawImage adPanel;
+    // public Button goToBuyButton;
+
+    private BannerView adBanner;
+    private UnifiedNativeAd adNative;
+    private bool nativeLoaded = false;
+    [SerializeField] GameObject adNativePanel;
+	[SerializeField] RawImage adIcon;
+	[SerializeField] RawImage adChoices;
+	[SerializeField] Text adHeadline;
+	[SerializeField] Text adCallToAction;
+    [SerializeField] Button adCallToActionButton;
+	[SerializeField] Text adAdvertiser;
     string userId = "james";
     private bool isUserInTrigArea;
-    private Queue<string> queue = new Queue<string>(); // 5ÃÊ Áö³ª°í ¿Ã ¸Þ½ÃÁö ´ãÀ» Å¥
-    private int trigNum; // ¸î¹øÂ° Æ®¸®°Å ¾È¿¡ µé¾î¿Ô´ÂÁö
-    private bool isAdPanelSet = false; //±¤°íÆÇ¿¡ ±¤°í°¡ ¼¼ÆÃµÇ¾îÀÖ´ÂÁö ¾Æ´ÑÁö
+    private Queue<string> queue = new Queue<string>(); // 5ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¥
+    private int trigNum; // ï¿½ï¿½ï¿½Â° Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½È¿ï¿½ ï¿½ï¿½ï¿½Ô´ï¿½ï¿½ï¿½
+    private bool isAdPanelSet = false; //ï¿½ï¿½ï¿½ï¿½ï¿½Ç¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ÃµÇ¾ï¿½ï¿½Ö´ï¿½ï¿½ï¿½ ï¿½Æ´ï¿½ï¿½ï¿½
     
+    private string idApp, idBanner, idNative;
+    
+    void Start ()
+	{
+		idApp = "ca-app-pub-5866285719867705~7266895518";
+		idBanner = "ca-app-pub-3940256099942544/6300978111";
+		idNative = "ca-app-pub-3940256099942544/2247696110";
+
+		MobileAds.Initialize(initStatus => { });
+		// MobileAds.Initialize (idApp);
+
+		// RequestBannerAd ();
+		RequestNativeAd ();
+        adCallToActionButton.gameObject.SetActive(false);
+	}
     private void Update()
     {
         if (queue.Count > 0 && !isUserInTrigArea)
         {
-            adPanel.texture = null;
-            goToBuyButton.gameObject.SetActive(false);
+            adNativePanel.SetActive (false); //hide ad panel
+            adIcon.texture = null;
+            adChoices.texture = null;
+            adHeadline.text = null;
+            adCallToAction.text = null;
+            adCallToActionButton.gameObject.SetActive(false);
+            adAdvertiser.text = null;
+            // goToBuyButton.gameObject.SetActive(false);
             queue.Dequeue();
             isAdPanelSet = false;
         }
-
     }
 
     void OnTriggerEnter(Collider col)
@@ -31,13 +63,39 @@ public class adtrigger : MonoBehaviour
         if (col.tag == "sphere")
         {
             trigNum++;
-            Debug.Log("Trigger!");
+            Debug.Log("Trigger Enter!");
             
             if (!isAdPanelSet)
             {
-                FashionAd fd = adPanel.GetComponent<FashionAd>();
-                fd.ShowAd();
-                goToBuyButton.gameObject.SetActive(true);
+                // FashionAd fd = adPanel.GetComponent<FashionAd>();
+                // fd.ShowAd();
+                // goToBuyButton.gameObject.SetActive(true);
+                RequestNativeAd ();
+
+                if (nativeLoaded) {
+                    nativeLoaded = false;
+
+                    Texture2D iconTexture = this.adNative.GetIconTexture ();
+                    Texture2D iconAdChoices = this.adNative.GetAdChoicesLogoTexture ();
+                    string headline = this.adNative.GetHeadlineText ();
+                    string cta = this.adNative.GetCallToActionText ();
+                    string advertiser = this.adNative.GetAdvertiserText ();
+                    adIcon.texture = iconTexture;
+                    adChoices.texture = iconAdChoices;
+                    adHeadline.text = headline;
+                    adAdvertiser.text = advertiser;
+                    adCallToActionButton.gameObject.SetActive(true);
+                    adCallToAction.text = cta;
+                    
+                    //register gameobjects
+                    adNative.RegisterIconImageGameObject (adIcon.gameObject);
+                    adNative.RegisterAdChoicesLogoGameObject (adChoices.gameObject);
+                    adNative.RegisterHeadlineTextGameObject (adHeadline.gameObject);
+                    adNative.RegisterCallToActionGameObject (adCallToAction.gameObject);
+                    adNative.RegisterAdvertiserTextGameObject (adAdvertiser.gameObject);
+
+                    adNativePanel.SetActive (true); //show ad panel
+                }
             }
 
             isUserInTrigArea = true;
@@ -49,9 +107,9 @@ public class adtrigger : MonoBehaviour
     {
         if (col.tag == "sphere")
         {
-            Debug.Log("Trigger!");
+            Debug.Log("Trigger Exit!");
 
-            //5ÃÊ µÚ¿¡ »ç¶óÁö°Ô ÇÏ´Â ¾²·¹µå
+            //5ï¿½ï¿½ ï¿½Ú¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             Thread td = new Thread(new ParameterizedThreadStart(Run));
             td.Start(trigNum);
             isUserInTrigArea = false;
@@ -60,13 +118,13 @@ public class adtrigger : MonoBehaviour
 
 
     /*
-     * 5ÃÊ µÚ ±¤°íÆÇ ¸®¼ÂÇÏ¶ó´Â ¸Þ¼¼Áö¸¦ º¸³¾ ¸Þ¼Òµå
-     * ´Ù½Ã Æ®¸®°Å ¾È¿¡ µé¾î¿ÔÀ» °æ¿ì ±âÁ¸¿¡ µ¹¾Æ°¡´ø ¾²·¹µå¸¦
-     * ¹«·ÂÈ­ ½ÃÅ°±â À§ÇØ ÀÌ ¾²·¹µå°¡ ½ÃÀÛµÉ ¶§ÀÇ trignumber¿Í ÇöÀç°¡
-     * µ¿ÀÏÇÑÁö ºñ±³ÇÔ.
-     * ÀÌ·¸°Ô ÇÏÁö ¾ÊÀ¸¸é À¯Àú°¡ Æ®¸®°Å ¹ÛÀ» ³ª°¬´Ù°¡ ´Ù½Ã 5ÃÊ ¾È¿¡ ´Ù½Ã µé¾î¿Â ÈÄ¿¡
-     * ¹Ù·Î ´Ù½Ã ³ª°¬À» ¶§´Â 5ÃÊ µÚ¿¡ ±¤°í°¡ »ç¶óÁöÁö ¾Ê°í ¹Ù·Î »ç¶óÁö°Å³ª 5ÃÊ°¡ µÇ±â Àü¿¡ »ç¶óÁü.
-     * ±âÁ¸¿¡ µ¹¾Æ°¡´ø ¾²·¹µå°¡ ½ÇÇàÀÌ ³¡³ª¸é¼­ ¸Þ¼¼Áö¸¦ ³¯¸®±â ¶§¹® 
+     * 5ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¶ï¿½ï¿½ ï¿½Þ¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¼Òµï¿½
+     * ï¿½Ù½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½È¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Æ°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½å¸¦
+     * ï¿½ï¿½ï¿½ï¿½È­ ï¿½ï¿½Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½å°¡ ï¿½ï¿½ï¿½Ûµï¿½ ï¿½ï¿½ï¿½ï¿½ trignumberï¿½ï¿½ ï¿½ï¿½ï¿½ç°¡
+     * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
+     * ï¿½Ì·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ù°ï¿½ ï¿½Ù½ï¿½ 5ï¿½ï¿½ ï¿½È¿ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ä¿ï¿½
+     * ï¿½Ù·ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 5ï¿½ï¿½ ï¿½Ú¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°ï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å³ï¿½ 5ï¿½Ê°ï¿½ ï¿½Ç±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½.
+     * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Æ°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½å°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½é¼­ ï¿½Þ¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 
      */
     private void Run(object trigNumber)
     {
@@ -77,5 +135,51 @@ public class adtrigger : MonoBehaviour
             queue.Enqueue(message);
         }
     }
+
+    #region Banner Methods --------------------------------------------------
+
+	public void RequestBannerAd ()
+	{
+		adBanner = new BannerView (idBanner, AdSize.Banner, AdPosition.Bottom);
+		AdRequest request = AdRequestBuild ();
+		adBanner.LoadAd (request);
+	}
+
+	public void DestroyBannerAd ()
+	{
+		if (adBanner != null)
+			adBanner.Destroy ();
+	}
+
+	#endregion
+
+	#region Native Ad Mehods ------------------------------------------------
+
+	private void RequestNativeAd ()
+	{
+		AdLoader adLoader = new AdLoader.Builder (idNative).ForUnifiedNativeAd ().Build ();
+		adLoader.OnUnifiedNativeAdLoaded += this.HandleOnUnifiedNativeAdLoaded;
+		adLoader.LoadAd (AdRequestBuild ());
+	}
+
+	//events
+	private void HandleOnUnifiedNativeAdLoaded (object sender, UnifiedNativeAdEventArgs args)
+	{
+		this.adNative = args.nativeAd;
+		nativeLoaded = true;
+	}
+
+	#endregion
+
+	//------------------------------------------------------------------------
+	AdRequest AdRequestBuild ()
+	{
+		return new AdRequest.Builder ().Build ();
+	}
+
+	void OnDestroy ()
+	{
+		DestroyBannerAd ();
+	}
 }
     

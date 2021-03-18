@@ -22,16 +22,17 @@ public class Admob : MonoBehaviour
 
 	void Awake ()
 	{
-		adNativePanel.SetActive (false); //hide ad panel
+		// adNativePanel.SetActive (false); //hide ad panel
 	}
 
 	void Start ()
 	{
-		idApp = "ca-app-pub-3940256099942544~3347511713";
+		idApp = "ca-app-pub-5866285719867705~7266895518";
 		idBanner = "ca-app-pub-3940256099942544/6300978111";
 		idNative = "ca-app-pub-3940256099942544/2247696110";
 
-		MobileAds.Initialize (idApp);
+		MobileAds.Initialize(initStatus => { });
+		// MobileAds.Initialize (idApp);
 
 		RequestBannerAd ();
 		RequestNativeAd ();
@@ -39,29 +40,29 @@ public class Admob : MonoBehaviour
 
 	void Update ()
 	{
-		if (nativeLoaded) {
-			nativeLoaded = false;
+		// if (nativeLoaded) {
+		// 	nativeLoaded = false;
 
-			Texture2D iconTexture = this.adNative.GetIconTexture ();
-			Texture2D iconAdChoices = this.adNative.GetAdChoicesLogoTexture ();
-			string headline = this.adNative.GetHeadlineText ();
-			string cta = this.adNative.GetCallToActionText ();
-			string advertiser = this.adNative.GetAdvertiserText ();
-			adIcon.texture = iconTexture;
-			adChoices.texture = iconAdChoices;
-			adHeadline.text = headline;
-			adAdvertiser.text = advertiser;
-			adCallToAction.text = cta;
+		// 	Texture2D iconTexture = this.adNative.GetIconTexture ();
+		// 	Texture2D iconAdChoices = this.adNative.GetAdChoicesLogoTexture ();
+		// 	string headline = this.adNative.GetHeadlineText ();
+		// 	string cta = this.adNative.GetCallToActionText ();
+		// 	string advertiser = this.adNative.GetAdvertiserText ();
+		// 	adIcon.texture = iconTexture;
+		// 	adChoices.texture = iconAdChoices;
+		// 	adHeadline.text = headline;
+		// 	adAdvertiser.text = advertiser;
+		// 	adCallToAction.text = cta;
 
-			//register gameobjects
-			adNative.RegisterIconImageGameObject (adIcon.gameObject);
-			adNative.RegisterAdChoicesLogoGameObject (adChoices.gameObject);
-			adNative.RegisterHeadlineTextGameObject (adHeadline.gameObject);
-			adNative.RegisterCallToActionGameObject (adCallToAction.gameObject);
-			adNative.RegisterAdvertiserTextGameObject (adAdvertiser.gameObject);
+		// 	//register gameobjects
+		// 	adNative.RegisterIconImageGameObject (adIcon.gameObject);
+		// 	adNative.RegisterAdChoicesLogoGameObject (adChoices.gameObject);
+		// 	adNative.RegisterHeadlineTextGameObject (adHeadline.gameObject);
+		// 	adNative.RegisterCallToActionGameObject (adCallToAction.gameObject);
+		// 	adNative.RegisterAdvertiserTextGameObject (adAdvertiser.gameObject);
 
-			adNativePanel.SetActive (true); //show ad panel
-		}
+		// 	adNativePanel.SetActive (true); //show ad panel
+		// }
 	}
 
 	#region Banner Methods --------------------------------------------------
